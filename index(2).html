@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thi trắc nghiệm - Cao đẳng nghề Việt Nam Singapore</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js">document.getElementById('teacherPass').addEventListener('keydown',function(e){if(e.key==='Enter')teacherLogin();});
+</script>
+<style>
+body{font-family:Arial;margin:0;background:#f3f6fa;color:#222}header{background:#17365d;color:#fff;padding:20px;text-align:center}
+main{max-width:1100px;margin:25px auto;padding:0 18px}.card{background:#fff;padding:22px;margin:18px 0;border-radius:12px;box-shadow:0 2px 10px #0001}
+button{padding:11px 18px;border:0;border-radius:7px;background:#1769aa;color:#fff;cursor:pointer;font-size:16px;margin:5px}
+.green{background:#218739}.red{background:#c62828}.orange{background:#e69500}.danger{background:#c62828}small{display:block;margin:8px 0;color:#666}
+input{width:100%;padding:11px;margin:6px 0 14px;box-sizing:border-box;border:1px solid #ccc;border-radius:7px}
+.hidden{display:none}.ok{font-weight:bold;color:#16803a}.bad{font-weight:bold;color:#b00020}
+.timer{position:sticky;top:0;background:#fff3cd;padding:14px;text-align:center;font-size:24px;font-weight:bold;z-index:5}
+.question{font-size:21px;line-height:1.6}.option{display:block;background:#f5f7fa;border:1px solid #ddd;padding:14px;margin:9px 0;border-radius:8px;cursor:pointer}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#e8eef7}
+</style>
+</head>
+<body>
+<header><h1>HỆ THỐNG THI TRẮC NGHIỆM ONLINE</h1><div>Cao đẳng nghề Việt Nam Singapore</div></header>
+<main>
+
+<div id="home" class="card">
+<h2>Chọn chức năng</h2>
+<p>Giáo viên cần đăng nhập để quản lý danh sách, ngân hàng câu hỏi, kỳ thi và kết quả.</p>
+<button onclick="openTeacherLogin()">🔐 GIÁO VIÊN</button>
+<button class="green" onclick="showStudent()">👨‍🎓 SINH VIÊN VÀO THI</button>
+</div>
+
+<div id="teacherLogin" class="card hidden">
+<h2>🔐 ĐĂNG NHẬP GIÁO VIÊN</h2>
+<label>Mật khẩu giáo viên</label>
+<input id="teacherPass" type="password" placeholder="Nhập mật khẩu">
+<button onclick="teacherLogin()">ĐĂNG NHẬP</button>
+<button class="red" onclick="backHome()">← Quay lại</button>
+<small>Mật khẩu mặc định ban đầu: <b>123456</b>. Có thể đổi trong mã app sau này.</small><div id="teacherLoginStatus"></div>
+</div>
+
+<section id="teacher" class="hidden">
+<div class="card"><h2>👨‍🏫 KHU VỰC GIÁO VIÊN</h2><p class="ok">🔒 Bạn đang ở chế độ giáo viên.</p><button class="red" onclick="teacherLogout()">🔒 ĐĂNG XUẤT GIÁO VIÊN</button></div>
+<div class="card">
+<h2>1. IMPORT NGÂN HÀNG CÂU HỎI</h2>
+<p>Excel phải có sheet <b>NGAN_HANG_IMPORT</b> và các cột: Mã câu hỏi, Câu hỏi, Đáp án A, Đáp án B, Đáp án C, Đáp án D, Đáp án đúng.</p>
+<input type="file" id="qfile" accept=".xlsx,.xls">
+<button onclick="importQuestions()">📥 IMPORT CÂU HỎI</button>
+<div id="qstatus"></div>
+</div>
+
+<div class="card">
+<h2>2. IMPORT DANH SÁCH SINH VIÊN</h2>
+<p>Excel cần 3 cột: <b>Mã SV</b> | <b>Họ tên</b> | <b>Lớp</b>.</p>
+<input type="file" id="sfile" accept=".xlsx,.xls">
+<button onclick="importStudents()">📥 IMPORT DANH SÁCH SINH VIÊN</button>
+<div id="sstatus"></div>
+<div id="sinfo"></div>
+</div>
+
+<div class="card">
+<h2>3. TẠO KỲ THI</h2>
+<label>Tên kỳ thi</label><input id="ename" value="Tiếng Anh Cao đẳng 2026">
+<label>Số câu</label><input id="enumber" type="number" value="40">
+<label>Thời gian (phút)</label><input id="emin" type="number" value="45">
+<label>Mã kỳ thi</label><input id="ecode" value="TA2026A8K">
+<p><label><input id="sq" type="checkbox" checked style="width:auto"> Đảo câu hỏi</label></p>
+<p><label><input id="sa" type="checkbox" checked style="width:auto"> Đảo đáp án</label></p>
+<p><label><input id="fs" type="checkbox" checked style="width:auto"> Toàn màn hình</label></p>
+<p><label><input id="dt" type="checkbox" checked style="width:auto"> Ghi nhận chuyển tab</label></p>
+<button class="green" onclick="createExam()">🚀 TẠO KỲ THI</button>
+<div id="estatus"></div>
+</div>
+
+<div class="card">
+<h2>4. KẾT QUẢ</h2><div id="results">Chưa có kết quả.</div>
+</div>
+<button class="red" onclick="location.reload()">← Về trang chính</button>
+</section>
+
+<section id="student" class="hidden">
+<div id="login" class="card">
+<h2>👨‍🎓 SINH VIÊN VÀO THI</h2>
+<label>Mã kỳ thi</label><input id="scode" placeholder="TA2026A8K">
+<label>Mã sinh viên</label><input id="sid" placeholder="SV001">
+<label>Họ tên</label><input id="sname" readonly placeholder="Tự động lấy từ danh sách">
+<label>Lớp</label><input id="sclass" readonly placeholder="Tự động lấy từ danh sách">
+<button class="green" onclick="loginStudent()">BẮT ĐẦU THI</button>
+<div id="loginstatus"></div>
+</div>
+
+<div id="exam" class="hidden">
+<div class="timer">⏱ THỜI GIAN CÒN LẠI: <span id="clock">00:00</span></div>
+<div class="card">
+<h2 id="qno"></h2><div id="qtext" class="question"></div><div id="opts"></div>
+<button onclick="nextQ()">CÂU TIẾP THEO →</button>
+<button class="red" onclick="submitExam()">NỘP BÀI</button>
+<p>Số lần rời khỏi bài thi: <b id="viol">0</b></p>
+</div>
+</div>
+
+<div id="final" class="card hidden"><h2>🎉 BÀI THI ĐÃ ĐƯỢC NỘP</h2><div id="finaltext"></div></div>
+</section>
+</main>
+
+<script>
+let bank=JSON.parse(localStorage.getItem('bank')||'[]');
+let students=JSON.parse(localStorage.getItem('students')||'[]');
+let exam=JSON.parse(localStorage.getItem('exam')||'null');
+let current=0, answers={}, seconds=0, timer=null, violations=0;
+
+function hideAll(){['home','teacher','student','teacherLogin'].forEach(id=>document.getElementById(id).classList.add('hidden'));}
+function show(id){
+  if(id==='teacher'){ if(sessionStorage.getItem('teacherAuth')!=='1'){openTeacherLogin();return;} }
+  hideAll(); document.getElementById(id).classList.remove('hidden');
+  if(id==='teacher')showInfo();
+}
+function openTeacherLogin(){hideAll();document.getElementById('teacherLogin').classList.remove('hidden');document.getElementById('teacherPass').value='';document.getElementById('teacherPass').focus();}
+function teacherLogin(){
+  const p=document.getElementById('teacherPass').value;
+  const TEACHER_PASSWORD='123456';
+  if(p===TEACHER_PASSWORD){sessionStorage.setItem('teacherAuth','1');document.getElementById('teacherLoginStatus').innerHTML='<p class="ok">✅ Đăng nhập thành công.</p>';setTimeout(()=>show('teacher'),200);}
+  else document.getElementById('teacherLoginStatus').innerHTML='<p class="bad">❌ Mật khẩu không đúng.</p>';
+}
+function teacherLogout(){sessionStorage.removeItem('teacherAuth');backHome();}
+function backHome(){hideAll();document.getElementById('home').classList.remove('hidden');}
+function showStudent(){hideAll();document.getElementById('student').classList.remove('hidden');}
+
+
+function importQuestions(){
+ const f=document.getElementById('qfile').files[0]; if(!f)return alert('Chọn file Excel câu hỏi.');
+ const r=new FileReader();r.onload=e=>{
+  try{
+   const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+   const sh=wb.Sheets['NGAN_HANG_IMPORT'];if(!sh)return alert('Không có sheet NGAN_HANG_IMPORT.');
+   bank=XLSX.utils.sheet_to_json(sh,{defval:''}).map(x=>({id:String(x['Mã câu hỏi']).trim(),question:x['Câu hỏi'],A:x['Đáp án A'],B:x['Đáp án B'],C:x['Đáp án C'],D:x['Đáp án D'],answer:String(x['Đáp án đúng']).trim().toUpperCase()})).filter(x=>x.id&&x.question);
+   localStorage.setItem('bank',JSON.stringify(bank));document.getElementById('qstatus').innerHTML='<p class="ok">✅ Đã nhập '+bank.length+' câu hỏi.</p>';
+  }catch(err){alert('Không đọc được file câu hỏi.');console.error(err)}
+ };r.readAsArrayBuffer(f);
+}
+
+function importStudents(){
+ const f=document.getElementById('sfile').files[0]; if(!f)return alert('Chọn file Excel danh sách sinh viên.');
+ const r=new FileReader();r.onload=e=>{
+  try{
+   const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+   const sh=wb.Sheets[wb.SheetNames[0]];
+   const rows=XLSX.utils.sheet_to_json(sh,{defval:''});
+   students=rows.map(x=>({id:String(x['Mã SV']??x['Mã sinh viên']??x['MSV']??'').trim(),name:String(x['Họ tên']??x['Họ và tên']??x['Tên sinh viên']??'').trim(),className:String(x['Lớp']??'').trim()})).filter(x=>x.id&&x.name);
+   localStorage.setItem('students',JSON.stringify(students));
+   document.getElementById('sstatus').innerHTML='<p class="ok">✅ Đã nhập '+students.length+' sinh viên.</p>';
+   showInfo();
+  }catch(err){alert('Không đọc được danh sách. Cần các cột Mã SV, Họ tên, Lớp.');console.error(err)}
+ };r.readAsArrayBuffer(f);
+}
+
+function showInfo(){
+ document.getElementById('sinfo').innerHTML=(students.length?'Danh sách hiện có: <b>'+students.length+'</b> sinh viên.':'⚠️ Chưa có danh sách sinh viên.');
+}
+
+function createExam(){
+ if(!bank.length)return alert('Chưa nhập ngân hàng câu hỏi.');
+ if(!students.length)return alert('Chưa nhập danh sách sinh viên.');
+ const n=+document.getElementById('enumber').value;
+ if(n>bank.length)return alert('Số câu lớn hơn ngân hàng.');
+ exam={name:document.getElementById('ename').value,number:n,minutes:+document.getElementById('emin').value,code:document.getElementById('ecode').value.trim(),shuffleQ:document.getElementById('sq').checked,shuffleA:document.getElementById('sa').checked,fullscreen:document.getElementById('fs').checked,detect:document.getElementById('dt').checked};
+ localStorage.setItem('exam',JSON.stringify(exam));
+ document.getElementById('estatus').innerHTML='<p class="ok">✅ Đã tạo kỳ thi <b>'+exam.code+'</b> — '+n+' câu — '+exam.minutes+' phút.</p>';
+}
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function loginStudent(){
+ exam=JSON.parse(localStorage.getItem('exam')||'null');
+ if(!exam)return alert('Giáo viên chưa tạo kỳ thi.');
+ if(document.getElementById('scode').value.trim()!==exam.code)return alert('Mã kỳ thi không đúng.');
+ const id=document.getElementById('sid').value.trim().toLowerCase();
+ const st=students.find(x=>x.id.toLowerCase()===id);
+ if(!st)return alert('Mã sinh viên không có trong danh sách được phép thi.');
+ document.getElementById('sname').value=st.name;document.getElementById('sclass').value=st.className;
+ let qs=exam.shuffleQ?shuffle(bank):bank.slice();
+ qs=qs.slice(0,exam.number).map(q=>{
+  let opts=[['A',q.A],['B',q.B],['C',q.C],['D',q.D]];
+  if(exam.shuffleA)opts=shuffle(opts);
+  return {id:q.id,question:q.question,correct:q.answer,opts};
+ });
+ exam.questions=qs;current=0;answers={};violations=0;seconds=exam.minutes*60;
+ document.getElementById('login').classList.add('hidden');document.getElementById('exam').classList.remove('hidden');
+ if(exam.fullscreen)document.documentElement.requestFullscreen?.().catch(()=>{});
+ if(exam.detect)document.addEventListener('visibilitychange',onVisibility);
+ updateClock();timer=setInterval(()=>{seconds--;updateClock();if(seconds<=0){clearInterval(timer);submitExam(true)}},1000);
+ renderQuestion();
+}
+
+function renderQuestion(){
+ const q=exam.questions[current];document.getElementById('qno').textContent='Câu '+(current+1)+'/'+exam.questions.length;document.getElementById('qtext').textContent=q.question;
+ const box=document.getElementById('opts');box.innerHTML='';
+ q.opts.forEach(o=>{let lab=document.createElement('label');lab.className='option';let inp=document.createElement('input');inp.type='radio';inp.name='ans';inp.checked=answers[current]===o[1];inp.onchange=()=>answers[current]=o[1];lab.append(inp,document.createTextNode(' '+o[0]+'. '+o[1]));box.appendChild(lab)});
+}
+function nextQ(){if(current<exam.questions.length-1){current++;renderQuestion()}else submitExam(false)}
+function updateClock(){let m=Math.floor(seconds/60),s=seconds%60;document.getElementById('clock').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function onVisibility(){if(document.visibilityState==='hidden'){violations++;document.getElementById('viol').textContent=violations;alert('⚠️ Bạn đã rời khỏi màn hình thi. Lần ghi nhận: '+violations)}}
+function submitExam(auto){
+ if(timer)clearInterval(timer);let correct=0;
+ exam.questions.forEach((q,i)=>{let a=answers[i];let hit=q.opts.find(o=>o[1]===a);if(hit&&hit[0]===q.correct)correct++});
+ const id=document.getElementById('sid').value.trim(),st=students.find(x=>x.id.toLowerCase()===id.toLowerCase());
+ const result={id,name:st?.name||'',className:st?.className||'',correct,total:exam.questions.length,score:(correct/exam.questions.length*10).toFixed(2),violations};
+ let results=JSON.parse(localStorage.getItem('results')||'[]');results.push(result);localStorage.setItem('results',JSON.stringify(results));
+ document.getElementById('exam').classList.add('hidden');document.getElementById('final').classList.remove('hidden');
+ document.getElementById('finaltext').innerHTML='<p>Họ tên: <b>'+result.name+'</b></p><p>Lớp: <b>'+result.className+'</b></p><p>Đúng: <b>'+correct+'/'+result.total+'</b></p><p>Điểm: <b>'+result.score+'</b></p><p>Số lần chuyển tab: <b>'+violations+'</b></p>';
+}
+
+function showResults(){
+ let rs=JSON.parse(localStorage.getItem('results')||'[]');if(!rs.length)return 'Chưa có kết quả.';
+ return '<table><tr><th>STT</th><th>Mã SV</th><th>Họ tên</th><th>Lớp</th><th>Đúng</th><th>Điểm</th><th>Chuyển tab</th></tr>'+rs.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+r.id+'</td><td>'+r.name+'</td><td>'+r.className+'</td><td>'+r.correct+'/'+r.total+'</td><td>'+r.score+'</td><td>'+r.violations+'</td></tr>').join('')+'</table>';
+}
+showInfo();
+document.getElementById('results').innerHTML=showResults();
+
+// ===== Editable student management =====
+function renderStudentManager(){
+  const wrap = document.getElementById('studentTableWrap');
+  if(!wrap) return;
+  const list = JSON.parse(localStorage.getItem('students') || '[]');
+  if(!list.length){
+    wrap.innerHTML = '<p>Chưa có sinh viên. Hãy thêm sinh viên hoặc Import Excel.</p>';
+    return;
+  }
+  let h = '<table style="width:100%;border-collapse:collapse"><thead><tr><th>Mã SV</th><th>Họ tên</th><th>Lớp</th><th>Thao tác</th></tr></thead><tbody>';
+  list.forEach((s,i)=>{
+    h += `<tr>
+      <td><input id="sid_${i}" value="${esc(s.id||'')}" style="width:100%"></td>
+      <td><input id="sname_${i}" value="${esc(s.name||'')}" style="width:100%"></td>
+      <td><input id="sclass_${i}" value="${esc(s.className||'')}" style="width:100%"></td>
+      <td>
+        <button onclick="saveStudent(${i})">💾 Lưu</button>
+        <button onclick="deleteStudent(${i})" class="danger">🗑️ Xóa</button>
+      </td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  wrap.innerHTML = h;
+}
+function esc(v){
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+}
+function saveStudent(i){
+  const list = JSON.parse(localStorage.getItem('students') || '[]');
+  list[i] = {
+    id: document.getElementById('sid_'+i).value.trim(),
+    name: document.getElementById('sname_'+i).value.trim(),
+    className: document.getElementById('sclass_'+i).value.trim()
+  };
+  if(!list[i].id || !list[i].name){ alert('Vui lòng nhập Mã SV và Họ tên.'); return; }
+  const duplicate = list.some((s,j)=>j!==i && s.id.toLowerCase()===list[i].id.toLowerCase());
+  if(duplicate){ alert('Mã SV bị trùng. Vui lòng kiểm tra lại.'); return; }
+  localStorage.setItem('students', JSON.stringify(list));
+  renderStudentManager();
+  alert('Đã cập nhật sinh viên.');
+}
+function addStudent(){
+  const list = JSON.parse(localStorage.getItem('students') || '[]');
+  list.push({id:'', name:'', className:''});
+  localStorage.setItem('students', JSON.stringify(list));
+  renderStudentManager();
+}
+function deleteStudent(i){
+  const list = JSON.parse(localStorage.getItem('students') || '[]');
+  if(confirm('Bạn có chắc muốn xóa sinh viên này?')){
+    list.splice(i,1);
+    localStorage.setItem('students', JSON.stringify(list));
+    renderStudentManager();
+  }
+}
+function clearStudents(){
+  if(confirm('Xóa toàn bộ danh sách sinh viên trên máy này?')){
+    localStorage.removeItem('students');
+    renderStudentManager();
+  }
+}
+function exportStudents(){
+  const list = JSON.parse(localStorage.getItem('students') || '[]');
+  if(!list.length){ alert('Chưa có danh sách sinh viên.'); return; }
+  const data = list.map(s=>({'Mã SV':s.id,'Họ tên':s.name,'Lớp':s.className||''}));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'DANH_SACH_SINH_VIEN');
+  XLSX.writeFile(wb, 'DANH_SACH_SINH_VIEN_HIEN_TAI.xlsx');
+}
+
+// Refresh editable table after the page's original student import finishes.
+const _oldImportStudents = window.importStudents;
+window.importStudents = function(){
+  if(typeof _oldImportStudents === 'function') _oldImportStudents();
+  setTimeout(renderStudentManager, 300);
+};
+window.addEventListener('load', renderStudentManager);
+
+
+(async function(){
+  if(!localStorage.getItem('students')){
+    try{
+      const r = await fetch('DANH_SACH_23_SV.json');
+      const data = await r.json();
+      localStorage.setItem('students', JSON.stringify(data));
+      if(typeof renderStudentManager === 'function') renderStudentManager();
+    }catch(e){}
+  }
+})();
+
+</script>
+</body>
+</html>
