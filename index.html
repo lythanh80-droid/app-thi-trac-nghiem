@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thi Tiếng Anh - VS College</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#1f2937}
+header{background:#1d4ed8;color:#fff;padding:18px 24px}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0}
+.wrap{max-width:1100px;margin:22px auto;padding:0 14px}
+.card{background:#fff;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 3px 14px #00000012}
+h2{margin-top:0;color:#1d4ed8}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+button{border:0;border-radius:8px;padding:11px 16px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#64748b}
+button.danger{background:#dc2626}
+button.green{background:#16a34a}
+button:hover{filter:brightness(.95)}
+textarea,input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+textarea{min-height:180px;font-family:Consolas,monospace}
+label{font-weight:700;display:block;margin:12px 0 6px}
+.note{background:#eff6ff;border-left:4px solid #2563eb;padding:12px;border-radius:6px;margin:12px 0}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{border:1px solid #dbe2ea;padding:8px;text-align:left}
+th{background:#f1f5f9}
+.small{font-size:13px;color:#64748b}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.timer{position:sticky;top:0;z-index:5;background:#b91c1c;color:#fff;padding:12px;text-align:center;border-radius:8px;font-size:20px;font-weight:bold;margin-bottom:16px}
+.q{border:1px solid #dbe2ea;border-radius:10px;padding:16px;margin:14px 0}
+.opt{display:block;background:#f8fafc;padding:10px;margin:7px 0;border-radius:7px;cursor:pointer}
+.opt:hover{background:#eaf1ff}
+.result{text-align:center}
+.score{font-size:40px;font-weight:800;color:#16a34a}
+.status{font-weight:700}
+</style>
+</head>
+<body>
+<header>
+<h1>HỆ THỐNG THI TIẾNG ANH</h1>
+<p>Cao đẳng nghề Việt Nam Singapore</p>
+</header>
+
+<div class="wrap">
+
+<div id="home" class="card">
+<h2>Chọn chế độ</h2>
+<div class="grid">
+<div>
+<h3>👩‍🏫 Giáo viên</h3>
+<p>Nhập danh sách học sinh, nhập ngân hàng câu hỏi và cài đặt đề.</p>
+<button onclick="show('teacher')">QUẢN LÝ DỮ LIỆU</button>
+</div>
+<div>
+<h3>👨‍🎓 Học sinh</h3>
+<p>Chọn tên trong danh sách → lớp tự động hiện → bắt đầu làm bài.</p>
+<button class="green" onclick="show('student')">VÀO THI</button>
+</div>
+</div>
+</div>
+
+<div id="teacher" class="hidden">
+<div class="tabs">
+<button onclick="teacherTab('students')">📋 Danh sách học sinh</button>
+<button onclick="teacherTab('questions')">📝 Ngân hàng câu hỏi</button>
+<button onclick="teacherTab('settings')">⚙️ Cài đặt đề</button>
+<button onclick="teacherTab('results')">📊 Danh sách điểm</button>
+<button class="secondary" onclick="show('home')">← Trang chủ</button>
+</div>
+
+<div id="students" class="card">
+<h2>📋 Nhập danh sách học sinh</h2>
+<div class="note">
+Dán trực tiếp từ Excel. Mỗi dòng: <b>STT | Họ và tên | Lớp</b>. Có thể dùng Tab hoặc dấu phẩy.
+</div>
+<textarea id="studentInput" placeholder="STT	Họ và tên	Lớp
+1	Nguyễn Tuấn Anh	T26DL2
+2	Đinh Hoàng Khôi	T26DL2"></textarea>
+<div style="margin-top:10px">
+<button onclick="importStudents()">NHẬP / CẬP NHẬT</button>
+<button class="danger" onclick="clearStudents()">XÓA DANH SÁCH</button>
+</div>
+<p class="small">Danh sách được lưu trên máy bằng trình duyệt.</p>
+<div id="studentTable"></div>
+</div>
+
+<div id="questions" class="card hidden">
+<h2>📝 Nhập ngân hàng câu hỏi</h2>
+<div class="note">
+Dán từ Excel theo 7 cột: <b>Mã câu | Câu hỏi | A | B | C | D | Đáp án</b>.
+Ví dụ đáp án là A, B, C hoặc D. Không cần nhập STT.
+</div>
+<textarea id="questionInput" placeholder="TANC001	There ___ a computer.	are	is	am	be	B
+TANC002	There ___ two books.	is	am	are	be	C"></textarea>
+<div style="margin-top:10px">
+<button onclick="importQuestions()">NHẬP / CẬP NHẬT</button>
+<button class="danger" onclick="clearQuestions()">XÓA NGÂN HÀNG</button>
+</div>
+<p class="small">Ngân hàng hiện đã được nạp sẵn <b>140 câu</b> từ file IMPORT_MOI_TA_TRUNG_CAP_2026_(1).docx. Bạn vẫn có thể dán bộ câu hỏi khác để thay thế.</p>
+<div id="questionTable"></div>
+</div>
+
+<div id="settings" class="card hidden">
+<h2>⚙️ Cài đặt bài thi</h2>
+<div class="grid">
+<div>
+<label>Số câu mỗi đề</label>
+<input id="numQuestions" type="number" min="1" value="60">
+</div>
+<div>
+<label>Số điểm tối đa</label>
+<input id="maxScore" type="number" min="0.1" step="0.1" value="9">
+</div>
+<div>
+<label>Thời gian (phút)</label>
+<input id="examMinutes" type="number" min="1" value="60">
+</div>
+</div>
+<label>1. Trộn câu hỏi</label>
+<select id="shuffleQuestions"><option value="yes">Có</option><option value="no">Không</option></select>
+<label>2. Trộn đáp án A/B/C/D</label>
+<select id="shuffleOptions"><option value="yes">Có</option><option value="no">Không</option></select>
+<label>3. Giới hạn số lần học sinh rời khỏi màn hình thi</label>
+<select id="tabLimit"><option value="0">Không tự động nộp</option><option value="1">1 lần</option><option value="2">2 lần</option><option value="3" selected>3 lần</option></select>
+<button class="green" onclick="saveSettings()">LƯU CÀI ĐẶT</button>
+</div>
+
+<div id="results" class="card hidden">
+<h2>📊 Danh sách điểm</h2>
+<div id="resultTable"></div>
+<div style="margin-top:10px">
+<button onclick="exportResults()">⬇️ XUẤT DANH SÁCH ĐIỂM CSV</button>
+<button class="danger" onclick="clearResults()">XÓA DANH SÁCH ĐIỂM</button>
+</div>
+</div>
+</div>
+
+<div id="student" class="card hidden">
+<h2>👨‍🎓 Đăng nhập dự thi</h2>
+<div class="note">Chọn lớp trước, sau đó chọn đúng họ tên.</div>
+<label>Lớp</label>
+<select id="classSelect">
+  <option value="T25">T25DL2+T25DT!</option>
+  <option value="T26">T26DH1</option>
+  <option value="T26OT1">T26OT1</option>
+</select>
+<label>Họ và tên</label>
+<select id="studentSelect"></select>
+<label>Lớp</label>
+<input id="studentClass" readonly>
+<button class="green" onclick="startExam()">BẮT ĐẦU LÀM BÀI</button>
+<button class="secondary" onclick="show('home')">← Quay lại</button>
+</div>
+
+<div id="exam" class="card hidden">
+<div class="timer">⏱ Thời gian còn lại: <span id="timer">60:00</span></div>
+<h2 id="examTitle">BÀI KIỂM TRA</h2>
+<div id="examQuestions"></div>
+<button class="green" onclick="submitExam(false)">NỘP BÀI</button>
+</div>
+
+<div id="result" class="card hidden">
+<div class="result">
+<h2>✅ KẾT QUẢ</h2>
+<p id="resultStudent"></p>
+<div class="score" id="resultScore"></div>
+<p id="resultDetail"></p>
+<button onclick="show('home')">VỀ TRANG CHỦ</button>
+</div>
+</div>
+
+</div>
+
+<script>
+const KEY_STUDENTS='vs_students_v1';
+const KEY_QUESTIONS='vs_questions_v2_140';
+const KEY_SETTINGS='vs_settings_v1';
+
+const DEFAULT_QUESTIONS=[{"id": "TATC-2026-001", "question": "_________ is that book over there?", "A": "How much", "B": "How many", "C": "Where", "D": "How is much", "answer": "A"}, {"id": "TATC-2026-002", "question": "That’s _________ dog.", "A": "Sally", "B": "Sally’", "C": "Sally’s", "D": "Sally’es", "answer": "C"}, {"id": "TATC-2026-003", "question": "Hoa _________ to buy a new dress.", "A": "want", "B": "wants", "C": "wanting", "D": "to want", "answer": "B"}, {"id": "TATC-2026-004", "question": "There are some _________ on the table.", "A": "dishs", "B": "dishes", "C": "dish", "D": "dish’s", "answer": "B"}, {"id": "TATC-2026-005", "question": "_________ books are very interesting but _________ books are boring.", "A": "This/that", "B": "These/that", "C": "This/those", "D": "These/those", "answer": "D"}, {"id": "TATC-2026-006", "question": "My teacher _________ to school by bus everyday.", "A": "come", "B": "coming", "C": "comes", "D": "to come", "answer": "C"}, {"id": "TATC-2026-007", "question": "Please _________ the fan.", "A": "turn on", "B": "close", "C": "turns on", "D": "closing", "answer": "A"}, {"id": "TATC-2026-008", "question": "My friend’s grandparents are famous _________.", "A": "businessman", "B": "businessmens", "C": "businessmen", "D": "businessmans", "answer": "C"}, {"id": "TATC-2026-009", "question": "He is my sister’s son so, he’s my _________.", "A": "niece", "B": "grandson", "C": "granddaughter", "D": "nephew", "answer": "D"}, {"id": "TATC-2026-010", "question": "What’s _________ ? I’m hungry", "A": "wrong", "B": "matter", "C": "all right", "D": "the up", "answer": "A"}, {"id": "TATC-2026-011", "question": "They love _________ parents very much.", "A": "their", "B": "them", "C": "theirs", "D": "their’s", "answer": "A"}, {"id": "TATC-2026-012", "question": "_________ did the writer feel? Angry", "A": "When", "B": "Where", "C": "How", "D": "Why", "answer": "C"}, {"id": "TATC-2026-013", "question": "I _________ traveling all over the world.", "A": "can", "B": "cannot", "C": "likes", "D": "like", "answer": "D"}, {"id": "TATC-2026-014", "question": "One who won in a major competition is called _________.", "A": "the winer", "B": "the winner", "C": "the winners", "D": "the champion", "answer": "D"}, {"id": "TATC-2026-015", "question": "Can we _________ basketball on Friday afternoon?", "A": "read", "B": "like", "C": "play", "D": "meet", "answer": "C"}, {"id": "TATC-2026-016", "question": "I went to the _________ for a play.", "A": "cinema", "B": "health farm", "C": "park", "D": "theatre", "answer": "D"}, {"id": "TATC-2026-017", "question": "He hasn’t been cheerful _________ the death of his friend.", "A": "for", "B": "since", "C": "during", "D": "from", "answer": "B"}, {"id": "TATC-2026-018", "question": "Lan is _________ Ha.", "A": "slimer than", "B": "more slim than", "C": "slimmer than", "D": "the slimmest", "answer": "C"}, {"id": "TATC-2026-019", "question": "What _________ your brother do in his free time? He plays …", "A": "do/tennis", "B": "do/the tennis", "C": "does/the tennis", "D": "does/tennis", "answer": "D"}, {"id": "TATC-2026-020", "question": "I just have bread, cheese and fruits for breakfast _________ weekdays.", "A": "on", "B": "at", "C": "in", "D": "to", "answer": "A"}, {"id": "TATC-2026-021", "question": "She’s got _________ job.", "A": "quite an interesting", "B": "an quite interesting", "C": "an interesting quite", "D": "an quite", "answer": "A"}, {"id": "TATC-2026-022", "question": "The chest of drawers is in the _________", "A": "living room", "B": "bedroom", "C": "dining room", "D": "kitchen", "answer": "B"}, {"id": "TATC-2026-023", "question": "I and my sister _________Miss White _________", "A": "am/’s nephews", "B": "are/’s nieces", "C": "is/’ niece", "D": "are/’s nephews", "answer": "B"}, {"id": "TATC-2026-024", "question": "Your _________ is in the middle of your leg.", "A": "foot", "B": "arm", "C": "toe", "D": "knee", "answer": "D"}, {"id": "TATC-2026-025", "question": "Mr Brown often _________ his children to school everyday.", "A": "dives", "B": "brings", "C": "picks", "D": "takes", "answer": "D"}, {"id": "TATC-2026-026", "question": "Jenny _________ is fast.", "A": "car", "B": "black car ‘s", "C": "car black", "D": "‘s black car", "answer": "D"}, {"id": "TATC-2026-027", "question": "I’m sorry. Saturday _________ for me.", "A": "‘s not good", "B": "no good", "C": "‘s no good", "D": "not good", "answer": "A"}, {"id": "TATC-2026-028", "question": "What time do you _________ breakfast _________ the morning?", "A": "has/on", "B": "has/in", "C": "have/in", "D": "have/at", "answer": "C"}, {"id": "TATC-2026-029", "question": "What time is it? It’s _________.", "A": "half past two", "B": "two to thirty", "C": "thirty to nine", "D": "two sixty", "answer": "A"}, {"id": "TATC-2026-030", "question": "An _________ has sea all around it.", "A": "expedition", "B": "ocean", "C": "universe", "D": "island", "answer": "D"}, {"id": "TATC-2026-031", "question": "When is the international woman’s day? It’s on _________.", "A": "The March of eighth", "B": "March of the eighth", "C": "The eighth of March", "D": "March of eighth", "answer": "A"}, {"id": "TATC-2026-032", "question": "They _________ talk in the class.", "A": "don’t usually", "B": "usually don’t", "C": "doesn’t usually", "D": "usually doesn’t", "answer": "A"}, {"id": "TATC-2026-033", "question": "Who is _________ student in your class?", "A": "the best", "B": "the goodest", "C": "the better", "D": "the gooder", "answer": "A"}, {"id": "TATC-2026-034", "question": "Mr Pike _________ me English.", "A": "doesn’t teaches", "B": "don’t teaches", "C": "doesn’t teach", "D": "don’t teach", "answer": "C"}, {"id": "TATC-2026-035", "question": "The plane is delayed. It _________ yet.", "A": "hasn’t taken off", "B": "didn’t take off", "C": "has taken off", "D": "took off", "answer": "A"}, {"id": "TATC-2026-036", "question": "We come back home _________ Tet’s holiday.", "A": "in", "B": "at", "C": "to", "D": "on", "answer": "D"}, {"id": "TATC-2026-037", "question": "Yesterday _________ the first day of the new school-year.", "A": "is", "B": "are", "C": "was", "D": "were", "answer": "C"}, {"id": "TATC-2026-038", "question": "There are _________ oranges on the table.", "A": "a", "B": "an", "C": "five", "D": "one", "answer": "C"}, {"id": "TATC-2026-039", "question": "Mr John has got a son. _________ name’s Tom.", "A": "It", "B": "Its", "C": "He", "D": "His", "answer": "D"}, {"id": "TATC-2026-040", "question": "My mother cooks dinner in the _________.", "A": "bedroom", "B": "bathroom", "C": "wardrobe", "D": "kitchen", "answer": "D"}, {"id": "TATC-2026-041", "question": "The guests _________ quite young.", "A": "are usually", "B": "usually are", "C": "‘s got usually", "D": "‘ve got usually", "answer": "A"}, {"id": "TATC-2026-042", "question": "My little sister _________ her hands before meals.", "A": "washes", "B": "wash", "C": "washs", "D": "to wash", "answer": "A"}, {"id": "TATC-2026-043", "question": "Are _________ glasses here yours, Simila?", "A": "this", "B": "that", "C": "these", "D": "those", "answer": "C"}, {"id": "TATC-2026-044", "question": "_________ sends me an English-Vietnamese dictionary.", "A": "She", "B": "Her", "C": "Him", "D": "His", "answer": "A"}, {"id": "TATC-2026-045", "question": "Keep silent! _________ are sleeping.", "A": "Baby", "B": "Babys", "C": "Babies", "D": "Babis", "answer": "C"}, {"id": "TATC-2026-046", "question": "Children start school at about nine _________.", "A": "quarter", "B": "past quarter", "C": "fifteen", "D": "past fifteen", "answer": "C"}, {"id": "TATC-2026-047", "question": "Her bicycle _________. She has to go to school on foot.", "A": "loose", "B": "has lost", "C": "losted", "D": "losed", "answer": "B"}, {"id": "TATC-2026-048", "question": "I _________ a present for her birthday tomorrow.", "A": "am going to buy", "B": "buy", "C": "bought", "D": "buys", "answer": "A"}, {"id": "TATC-2026-049", "question": "You _________ swim in this swimming pool because the water is dirty.", "A": "can", "B": "can’t", "C": "cann’t", "D": "cans", "answer": "B"}, {"id": "TATC-2026-050", "question": "Would you like _________ soup?", "A": "a", "B": "an", "C": "some", "D": "any", "answer": "C"}, {"id": "TATC-2026-051", "question": "After a long day at work, I just want to _________ at home.", "A": "relax", "B": "celebrate", "C": "explore", "D": "compete", "answer": "A"}, {"id": "TATC-2026-052", "question": "This restaurant is famous _________ its traditional dishes.", "A": "about", "B": "for", "C": "with", "D": "in", "answer": "B"}, {"id": "TATC-2026-053", "question": "He booked a hotel room because he planned to stay re _________.", "A": "overnight", "B": "daily", "C": "weekly", "D": "suddenly", "answer": "A"}, {"id": "TATC-2026-054", "question": "Many people tend to _________ their problems instead of dealing with them directly, which often makes the situation worse.", "A": "avoid", "B": "ignore", "C": "overlook", "D": "evade", "answer": "D"}, {"id": "TATC-2026-055", "question": "The soup tastes a bit _________, maybe it needs more salt.", "A": "spicy", "B": "sweet", "C": "bland", "D": "sour", "answer": "C"}, {"id": "TATC-2026-056", "question": "We are going to_________ sightseeing in Da Lat this summer.", "A": "go", "B": "do", "C": "make", "D": "play", "answer": "A"}, {"id": "TATC-2026-057", "question": "The company is trying to ___ its image by launching environmentally friendly products.", "A": "damage", "B": "improve", "C": "enhance", "D": "increase", "answer": "C"}, {"id": "TATC-2026-058", "question": "He works as a chef, so he is good at _________.", "A": "cooking", "B": "teaching", "C": "driving", "D": "painting", "answer": "A"}, {"id": "TATC-2026-059", "question": "The wedding was a very _________ occasion for the whole family.", "A": "special", "B": "usual", "C": "normal", "D": "daily", "answer": "A"}, {"id": "TATC-2026-060", "question": "He gave a very _________ explanation, so even beginners could understand the concept easily.", "A": "vague", "B": "concise", "C": "complicated", "D": "clear-cut", "answer": "D"}, {"id": "TATC-2026-061", "question": "This dish is too _________ for me. I can’t eat it.", "A": "delicious", "B": "spicy", "C": "cheap", "D": "fresh", "answer": "B"}, {"id": "TATC-2026-062", "question": "The situation requires immediate _________.", "A": "movement", "B": "activity", "C": "action", "D": "behavior", "answer": "C"}, {"id": "TATC-2026-063", "question": "During my vacation, I like to _________ new places.", "A": "explore", "B": "fix", "C": "build", "D": "control", "answer": "A"}, {"id": "TATC-2026-064", "question": "Despite his lack of experience, he managed to complete the task with surprising _________.", "A": "hesitation", "B": "difficulty", "C": "confusion", "D": "efficiency", "answer": "D"}, {"id": "TATC-2026-065", "question": "Her speech was so _________ that it inspired everyone in the audience to take action.", "A": "boring", "B": "discouraging", "C": "motivating", "D": "tiring", "answer": "C"}, {"id": "TATC-2026-066", "question": "The instructions were not very clear, which led to several _________ during the experiment.", "A": "successes", "B": "mistakes", "C": "achievements", "D": "results", "answer": "B"}, {"id": "TATC-2026-067", "question": "He has a reputation for being _________, so people often trust him with important tasks.", "A": "careless", "B": "selfish", "C": "lazy", "D": "reliable", "answer": "D"}, {"id": "TATC-2026-068", "question": "The sudden change in weather had a significant _________ on the farmers’ crops.", "A": "cause", "B": "result", "C": "effect", "D": "impact", "answer": "C"}, {"id": "TATC-2026-069", "question": "She was _________ to find out that she had passed the exam with excellent results.", "A": "disappointed", "B": "relieved", "C": "worried", "D": "confused", "answer": "B"}, {"id": "TATC-2026-070", "question": "The project was delayed due to _________ technical problems that had not been expected.", "A": "minor", "B": "major", "C": "unforeseen", "D": "usual", "answer": "C"}, {"id": "TATC-2026-071", "question": "They _________ a traditional festival every year.", "A": "organize", "B": "build", "C": "repair", "D": "fix", "answer": "A"}, {"id": "TATC-2026-072", "question": "He is considered a _________ expert in his field.", "A": "leading", "B": "main", "C": "big", "D": "high", "answer": "A"}, {"id": "TATC-2026-073", "question": "He tried to _________ his fear of public speaking by practicing regularly.", "A": "increase", "B": "overcome", "C": "develop", "D": "accept", "answer": "B"}, {"id": "TATC-2026-074", "question": "The movie was so _________ that I couldn’t stop thinking about it afterward.", "A": "forgettable", "B": "ordinary", "C": "boring", "D": "memorable", "answer": "D"}, {"id": "TATC-2026-075", "question": "The teacher encouraged students to _________ their own opinions during the discussion.", "A": "hide", "B": "avoid", "C": "express", "D": "limit", "answer": "C"}, {"id": "TATC-2026-076", "question": "The concert was so _________ that everyone enjoyed it.", "A": "exciting", "B": "bored", "C": "tiring", "D": "slow", "answer": "A"}, {"id": "TATC-2026-077", "question": "His explanation was too _________, making it difficult for others to follow.", "A": "detailed", "B": "complex", "C": "simple", "D": "clear", "answer": "B"}, {"id": "TATC-2026-078", "question": "The company decided to _________ the new policy to improve working conditions.", "A": "cancel", "B": "introduce", "C": "remove", "D": "stop", "answer": "B"}, {"id": "TATC-2026-079", "question": "She made a quick _________ without considering all the possible consequences.", "A": "decision", "B": "choice", "C": "solution", "D": "result", "answer": "A"}, {"id": "TATC-2026-080", "question": "The increase in prices has _________ many people to change their spending habits.", "A": "forced", "B": "encouraged", "C": "caused", "D": "led to", "answer": "D"}, {"id": "TATC-2026-081", "question": "The book provides a _________ overview of the topic, covering all the main ideas clearly.", "A": "comprehensive", "B": "limited", "C": "brief", "D": "narrow", "answer": "A"}, {"id": "TATC-2026-082", "question": "He was _________ of the risks but decided to continue anyway.", "A": "unaware", "B": "aware", "C": "careless", "D": "afraid", "answer": "B"}, {"id": "TATC-2026-083", "question": "The hotel was fully booked, so we had to look for _________ accommodation.", "A": "another", "B": "other", "C": "others", "D": "the other", "answer": "A"}, {"id": "TATC-2026-084", "question": "The noise outside was so _________ that I couldn’t concentrate on my work.", "A": "pleasant", "B": "relaxing", "C": "peaceful", "D": "disturbing", "answer": "D"}, {"id": "TATC-2026-085", "question": "He is really into outdoor activities, _________ camping and hiking.", "A": "such as", "B": "because", "C": "although", "D": "instead", "answer": "A"}, {"id": "TATC-2026-086", "question": "She has a strong _________ in environmental protection and often joins volunteer activities.", "A": "interest", "B": "hobby", "C": "habit", "D": "action", "answer": "A"}, {"id": "TATC-2026-087", "question": "The results of the experiment were _________, showing no clear pattern.", "A": "consistent", "B": "predictable", "C": "inconsistent", "D": "reliable", "answer": "C"}, {"id": "TATC-2026-088", "question": "The company is known for its _________ customer service.", "A": "excellent", "B": "excellence", "C": "excellently", "D": "excel", "answer": "A"}, {"id": "TATC-2026-089", "question": "He is trying to _________ his skills by taking additional courses.", "A": "improve", "B": "reduce", "C": "decrease", "D": "limit", "answer": "A"}, {"id": "TATC-2026-090", "question": "The city has become more _________ due to rapid development and population growth.", "A": "crowded", "B": "empty", "C": "quiet", "D": "calm", "answer": "A"}, {"id": "TATC-2026-091", "question": "He was tired, but he kept _________ until he finished his work.", "A": "working", "B": "to work", "C": "worked", "D": "work", "answer": "A"}, {"id": "TATC-2026-092", "question": "This is one of the _________ places I have ever visited.", "A": "beautiful", "B": "more beautiful", "C": "most beautiful", "D": "beauty", "answer": "C"}, {"id": "TATC-2026-093", "question": "She gave a _________ answer that did not clearly address the question.", "A": "direct", "B": "vague", "C": "clear", "D": "correct", "answer": "B"}, {"id": "TATC-2026-094", "question": "The new system is designed to _________ errors and improve efficiency.", "A": "reduce", "B": "increase", "C": "create", "D": "cause", "answer": "A"}, {"id": "TATC-2026-095", "question": "The sudden increase in demand led to a _________ in prices.", "A": "rise", "B": "raise", "C": "growth", "D": "lift", "answer": "A"}, {"id": "TATC-2026-096", "question": "The new system has improved efficiency _________ a great extent.", "A": "in", "B": "on", "C": "to", "D": "at", "answer": "C"}, {"id": "TATC-2026-097", "question": "He showed great _________ in dealing with the difficult situation calmly.", "A": "patience", "B": "anger", "C": "fear", "D": "weakness", "answer": "A"}, {"id": "TATC-2026-098", "question": "Although the plan seemed perfect in theory, it turned out to be _________ in practice.", "A": "effective", "B": "impractical", "C": "successful", "D": "useful", "answer": "B"}, {"id": "TATC-2026-099", "question": "He tends to _________ small details, which sometimes leads to serious mistakes.", "A": "ignore", "B": "overlook", "C": "observe", "D": "notice", "answer": "B"}, {"id": "TATC-2026-100", "question": "The report provides a _________ analysis of the company’s financial situation.", "A": "shallow", "B": "detailed", "C": "thorough", "D": "simple", "answer": "C"}, {"id": "TATC-2026-101", "question": "She was _________ to hear that her application had been rejected.", "A": "delighted", "B": "relieved", "C": "disappointed", "D": "satisfied", "answer": "C"}, {"id": "TATC-2026-102", "question": "The company is facing increasing _________ from its competitors.", "A": "pressure", "B": "support", "C": "help", "D": "benefit", "answer": "A"}, {"id": "TATC-2026-103", "question": "He gave a _________ answer that avoided the main issue.", "A": "direct", "B": "clear", "C": "evasive", "D": "honest", "answer": "C"}, {"id": "TATC-2026-104", "question": "This dish is _________ than I expected.", "A": "more delicious", "B": "delicious", "C": "most delicious", "D": "deliciously", "answer": "A"}, {"id": "TATC-2026-105", "question": "The new policy aims to _________ waste and improve efficiency.", "A": "increase", "B": "reduce", "C": "create", "D": "damage", "answer": "B"}, {"id": "TATC-2026-106", "question": "Her performance was _________, far beyond what we had expected.", "A": "average", "B": "outstanding", "C": "normal", "D": "typical", "answer": "B"}, {"id": "TATC-2026-107", "question": "The teacher asked students to _________ their answers with clear reasons.", "A": "explain", "B": "tell", "C": "speak", "D": "say", "answer": "A"}, {"id": "TATC-2026-108", "question": "The results were _________, so more research is needed.", "A": "conclusive", "B": "unclear", "C": "certain", "D": "obvious", "answer": "B"}, {"id": "TATC-2026-109", "question": "He managed to _________ the problem despite limited resources.", "A": "solve", "B": "create", "C": "avoid", "D": "ignore", "answer": "A"}, {"id": "TATC-2026-110", "question": "The sudden change in plans caused a lot of _________.", "A": "confusion", "B": "clarity", "C": "order", "D": "peace", "answer": "A"}, {"id": "TATC-2026-111", "question": "Drinking enough water helps your body stay _________.", "A": "polluted", "B": "hydrated", "C": "frozen", "D": "heated", "answer": "B"}, {"id": "TATC-2026-112", "question": "She has a strong _________ of responsibility toward her work.", "A": "feeling", "B": "sense", "C": "thought", "D": "idea", "answer": "B"}, {"id": "TATC-2026-113", "question": "The instructions were too _________ for beginners to follow easily.", "A": "simple", "B": "complex", "C": "clear", "D": "short", "answer": "B"}, {"id": "TATC-2026-114", "question": "Solar energy is considered a _________ source of energy.", "A": "limited", "B": "renewable", "C": "harmful", "D": "expensive", "answer": "B"}, {"id": "TATC-2026-115", "question": "Plastic waste has a serious impact _________ the environment.", "A": "in", "B": "on", "C": "at", "D": "for", "answer": "B"}, {"id": "TATC-2026-116", "question": "Air pollution can cause breathing _________.", "A": "exercises", "B": "benefits", "C": "solutions", "D": "problems", "answer": "D"}, {"id": "TATC-2026-117", "question": "People are encouraged to use public transport to reduce traffic _________.", "A": "accidents", "B": "congestion", "C": "pollution", "D": "noise", "answer": "B"}, {"id": "TATC-2026-118", "question": "A balanced diet includes vegetables, fruits, and _________ protein.", "A": "unhealthy", "B": "enough", "C": "weak", "D": "poor", "answer": "B"}, {"id": "TATC-2026-119", "question": "The company decided to _________ its products to international markets.", "A": "expand", "B": "extend", "C": "increase", "D": "grow", "answer": "A"}, {"id": "TATC-2026-120", "question": "He failed to _________ the importance of teamwork.", "A": "realize", "B": "know", "C": "think", "D": "understand", "answer": "A"}, {"id": "TATC-2026-121", "question": "He took full _________ for the mistake and apologized sincerely.", "A": "responsibly", "B": "responsible", "C": "responsibility", "D": "respond", "answer": "C"}, {"id": "TATC-2026-122", "question": "Plants need sunlight to carry out _________.", "A": "digestion", "B": "photosynthesis", "C": "breathing", "D": "movement", "answer": "B"}, {"id": "TATC-2026-123", "question": "The experiment produced _________ results that could not be ignored.", "A": "significant", "B": "small", "C": "weak", "D": "minor", "answer": "A"}, {"id": "TATC-2026-124", "question": "She is very _________ about environmental issues and often joins campaigns.", "A": "aware", "B": "knowing", "C": "understanding", "D": "realizing", "answer": "A"}, {"id": "TATC-2026-125", "question": "The company is trying to _________ costs without reducing quality.", "A": "lower", "B": "break", "C": "cut", "D": "drop", "answer": "C"}, {"id": "TATC-2026-126", "question": "Using less plastic can help protect marine _________.", "A": "space", "B": "land", "C": "air", "D": "life", "answer": "D"}, {"id": "TATC-2026-127", "question": "Many people prefer working from home because it saves _________.", "A": "time and money", "B": "food and water", "C": "energy and light", "D": "work and effort", "answer": "A"}, {"id": "TATC-2026-128", "question": "A virus is a tiny organism that can cause _________.", "A": "health", "B": "disease", "C": "energy", "D": "movement", "answer": "B"}, {"id": "TATC-2026-129", "question": "He gave a _________ description of the event, including every detail.", "A": "brief", "B": "detailed", "C": "simple", "D": "short", "answer": "B"}, {"id": "TATC-2026-130", "question": "The results of the study were _________ with previous research.", "A": "consistent", "B": "similar", "C": "same", "D": "equal", "answer": "A"}, {"id": "TATC-2026-131", "question": "Wearing a seatbelt can reduce the risk of serious _________.", "A": "damage", "B": "loss", "C": "injury", "D": "danger", "answer": "C"}, {"id": "TATC-2026-132", "question": "Many students use online courses to improve their _________.", "A": "skills", "B": "clothes", "C": "money", "D": "habits", "answer": "A"}, {"id": "TATC-2026-133", "question": "Airplanes are faster than cars, so they are often used for long-distance _________.", "A": "travel", "B": "walking", "C": "driving", "D": "running", "answer": "A"}, {"id": "TATC-2026-134", "question": "She made an _________ decision without thinking carefully.", "A": "immediate", "B": "instant", "C": "impulsive", "D": "quick", "answer": "C"}, {"id": "TATC-2026-135", "question": "The teacher gave students _________ feedback to help them improve.", "A": "useful", "B": "use", "C": "used", "D": "using", "answer": "A"}, {"id": "TATC-2026-136", "question": "He showed a great deal of _________ in solving the problem.", "A": "creative", "B": "creativity", "C": "create", "D": "creatively", "answer": "B"}, {"id": "TATC-2026-137", "question": "A smartphone is a device used to communicate and access _________.", "A": "health", "B": "food", "C": "information", "D": "air", "answer": "C"}, {"id": "TATC-2026-138", "question": "The government encourages people to plant more trees to reduce _________.", "A": "pollution", "B": "noise", "C": "light", "D": "traffic", "answer": "A"}, {"id": "TATC-2026-139", "question": "Learning a new language can improve your _________.", "A": "memory", "B": "height", "C": "weight", "D": "speed", "answer": "A"}, {"id": "TATC-2026-140", "question": "The instructions were not _________ enough, which caused confusion.", "A": "clear", "B": "clearly", "C": "clarity", "D": "clearing", "answer": "A"}];
+
+const DEFAULT_T25_STUDENTS = [{"stt":1,"name":"Lữ Văn Mạnh","cls":"T25DL2+T25DT!"},{"stt":2,"name":"Lê Hữu Nghị","cls":"T25DL2+T25DT!"},{"stt":3,"name":"Huỳnh Gia Bảo","cls":"T25DL2+T25DT!"},{"stt":4,"name":"Lê Nhựt Duy","cls":"T25DL2+T25DT!"},{"stt":5,"name":"Bùi Văn Thành Đạt","cls":"T25DL2+T25DT!"},{"stt":6,"name":"Lê Nguyễn Bảo Khang","cls":"T25DL2+T25DT!"},{"stt":7,"name":"Trần Thịnh Nguyên Khang","cls":"T25DL2+T25DT!"},{"stt":8,"name":"Nguyễn Phước Lập","cls":"T25DL2+T25DT!"},{"stt":9,"name":"Võ Tấn Lộc","cls":"T25DL2+T25DT!"},{"stt":10,"name":"Huỳnh Lê Nhật Minh","cls":"T25DL2+T25DT!"},{"stt":11,"name":"Dương Tấn Phong","cls":"T25DL2+T25DT!"},{"stt":12,"name":"Nguyễn Quốc Sỹ","cls":"T25DL2+T25DT!"},{"stt":13,"name":"Nguyễn Hoàng Thái","cls":"T25DL2+T25DT!"},{"stt":14,"name":"Phạm Chí Thiện","cls":"T25DL2+T25DT!"},{"stt":15,"name":"Ngô Mai Quang Trí","cls":"T25DL2+T25DT!"},{"stt":16,"name":"Nguyễn Đoàn Gia Bảo","cls":"T25DL2+T25DT!"},{"stt":17,"name":"Vũ Mạnh Dũng","cls":"T25DL2+T25DT!"},{"stt":18,"name":"Nguyễn Trần Quốc Huy","cls":"T25DL2+T25DT!"},{"stt":19,"name":"Phạm Minh Khang","cls":"T25DL2+T25DT!"},{"stt":20,"name":"Vũ Văn Long","cls":"T25DL2+T25DT!"},{"stt":21,"name":"Trần Đức Lương","cls":"T25DL2+T25DT!"},{"stt":22,"name":"Trần Bảo Tâm","cls":"T25DL2+T25DT!"},{"stt":23,"name":"Trần Minh Trí","cls":"T25DL2+T25DT!"},{"stt":24,"name":"Nguyễn Phạm Phương Trường","cls":"T25DL2+T25DT!"},{"stt":25,"name":"Nguyễn Gia Vĩnh","cls":"T25DL2+T25DT!"},{"stt":26,"name":"Nguyễn Hán Hải","cls":"T25DL2+T25DT!"}];
+const DEFAULT_T26DH1_STUDENTS = [{"stt":1,"name":"Lê Thị Thùy Dương","cls":"T26DH1"},{"stt":2,"name":"Lê Dương","cls":"T26DH1"},{"stt":3,"name":"Trần Ngọc Linh Đan","cls":"T26DH1"},{"stt":4,"name":"Lê Thị Thanh Hà","cls":"T26DH1"},{"stt":5,"name":"Đặng Văn Hải","cls":"T26DH1"},{"stt":6,"name":"Dương Gia Hân","cls":"T26DH1"},{"stt":7,"name":"Võ Gia Huy","cls":"T26DH1"},{"stt":8,"name":"Thạch Gia Huy","cls":"T26DH1"},{"stt":9,"name":"Nguyễn Hoàng Long Khánh","cls":"T26DH1"},{"stt":10,"name":"Đàm Tuấn Khôi","cls":"T26DH1"},{"stt":11,"name":"Nguyễn Thị Huê Lạc","cls":"T26DH1"},{"stt":12,"name":"Nguyễn Thị Cẩm Ly","cls":"T26DH1"},{"stt":13,"name":"Dương Tuyết My","cls":"T26DH1"},{"stt":14,"name":"Nguyễn Thị A Na","cls":"T26DH1"},{"stt":15,"name":"Giang Trọng Nghĩa","cls":"T26DH1"},{"stt":16,"name":"Hồ Tuyết Ngọc","cls":"T26DH1"},{"stt":17,"name":"Nguyễn Nguyễn Bảo Ngọc","cls":"T26DH1"},{"stt":18,"name":"Bùi Thị Minh Nguyệt","cls":"T26DH1"},{"stt":19,"name":"Dương Chính Nhân","cls":"T26DH1"},{"stt":20,"name":"Trần Gia Nhi","cls":"T26DH1"},{"stt":21,"name":"Phạm Huỳnh Yến Nhi","cls":"T26DH1"},{"stt":22,"name":"Nguyễn Huỳnh Bảo Nhi","cls":"T26DH1"},{"stt":23,"name":"Trương Bội Nhi","cls":"T26DH1"},{"stt":24,"name":"Giang Yến Nhi","cls":"T26DH1"},{"stt":25,"name":"Hà Văn Nhiều","cls":"T26DH1"},{"stt":26,"name":"Trần Lê Huỳnh Như","cls":"T26DH1"},{"stt":27,"name":"Lâm Bảo Phát","cls":"T26DH1"},{"stt":28,"name":"Lê Ngọc Duy Phúc","cls":"T26DH1"},{"stt":29,"name":"Nguyễn Hoàng Kim Phụng","cls":"T26DH1"},{"stt":30,"name":"Võ Đặng Mai Phương","cls":"T26DH1"},{"stt":31,"name":"Nguyễn Trần Phương Tâm","cls":"T26DH1"},{"stt":32,"name":"Lương Hùng Thiên","cls":"T26DH1"},{"stt":33,"name":"Hồ Văn Thuyết","cls":"T26DH1"},{"stt":34,"name":"Võ Thị Mai Thư","cls":"T26DH1"},{"stt":35,"name":"Nguyễn Trí Thục Tiên","cls":"T26DH1"},{"stt":36,"name":"Ngô Thùy Trang","cls":"T26DH1"},{"stt":37,"name":"Đinh Võ Yến Trang","cls":"T26DH1"},{"stt":38,"name":"Trần Phương Trinh","cls":"T26DH1"},{"stt":39,"name":"Nguyễn Phạm Kiều Trinh","cls":"T26DH1"},{"stt":40,"name":"Trần Thị Kiều Trinh","cls":"T26DH1"},{"stt":41,"name":"Nguyễn Nhật Trường","cls":"T26DH1"},{"stt":42,"name":"Nguyễn Ngọc Tường Vy","cls":"T26DH1"},{"stt":43,"name":"Nguyễn Thị Xuân","cls":"T26DH1"},{"stt":44,"name":"Lầm Gia Yến","cls":"T26DH1"},{"stt":45,"name":"Bùi Thị Ngọc Yến","cls":"T26DH1"}];
+const DEFAULT_T26OT1_STUDENTS = [
+{"stt":1,"name":"Trần Nhật Anh","cls":"T26OT1"},{"stt":2,"name":"Lưu Quốc Bảo","cls":"T26OT1"},{"stt":3,"name":"Trần Thanh Bằng","cls":"T26OT1"},{"stt":4,"name":"Cao Thanh Bình","cls":"T26OT1"},{"stt":5,"name":"Vũ Minh Dũng","cls":"T26OT1"},{"stt":6,"name":"Nguyễn Thanh Thái Dương","cls":"T26OT1"},{"stt":7,"name":"Đặng Thành Đạt","cls":"T26OT1"},{"stt":8,"name":"Vũ Dương Đông","cls":"T26OT1"},{"stt":9,"name":"Trần Thanh Hải","cls":"T26OT1"},{"stt":10,"name":"Nguyễn Trung Hậu","cls":"T26OT1"},{"stt":11,"name":"Nguyễn Nhật Huy","cls":"T26OT1"},{"stt":12,"name":"Nguyễn Gia Huy","cls":"T26OT1"},{"stt":13,"name":"Nguyễn Kha","cls":"T26OT1"},{"stt":14,"name":"Phạm Minh Kha","cls":"T26OT1"},{"stt":15,"name":"Trần Minh Khang","cls":"T26OT1"},{"stt":16,"name":"Chung Lê Hoàng Khang","cls":"T26OT1"},{"stt":17,"name":"Nguyễn Tấn Mạnh Khương","cls":"T26OT1"},{"stt":18,"name":"Hoàng Phi Long","cls":"T26OT1"},{"stt":19,"name":"Nguyễn Lê Bảo Long","cls":"T26OT1"},{"stt":20,"name":"Nguyễn Huỳnh Thiên Lộc","cls":"T26OT1"},{"stt":21,"name":"Phan Ngọc Khải Minh","cls":"T26OT1"},{"stt":22,"name":"Trịnh Văn Bảo Nam","cls":"T26OT1"},{"stt":23,"name":"Lý Hạo Nam","cls":"T26OT1"},{"stt":24,"name":"Nguyễn Lê Nghiêm","cls":"T26OT1"},{"stt":25,"name":"Võ Tuấn Nguyên","cls":"T26OT1"},{"stt":26,"name":"Nguyễn Trà Trí Nhân","cls":"T26OT1"},{"stt":27,"name":"Nguyễn Hoàng Minh Nhật","cls":"T26OT1"},{"stt":28,"name":"Mai Thanh Phong","cls":"T26OT1"},{"stt":29,"name":"Vũ Duy Phú","cls":"T26OT1"},{"stt":30,"name":"Lâm Hiền Phú","cls":"T26OT1"},{"stt":31,"name":"Huỳnh Phúc","cls":"T26OT1"},{"stt":32,"name":"Phan Duy Phúc","cls":"T26OT1"},{"stt":33,"name":"Huỳnh Tâm Phúc","cls":"T26OT1"},{"stt":34,"name":"Huỳnh Nhựt Quang","cls":"T26OT1"},{"stt":35,"name":"Nguyễn Vinh Sang","cls":"T26OT1"},{"stt":36,"name":"Hwang Ưng Sót","cls":"T26OT1"},{"stt":37,"name":"Nguyễn Hữu Tài","cls":"T26OT1"},{"stt":38,"name":"Huỳnh Lê Quốc Thái","cls":"T26OT1"},{"stt":39,"name":"Phạm Chí Thành","cls":"T26OT1"},{"stt":40,"name":"Nguyễn Hồ Minh Thạo","cls":"T26OT1"},{"stt":41,"name":"Lưu Quang Thắng","cls":"T26OT1"},{"stt":42,"name":"Phạm An Thịnh","cls":"T26OT1"},{"stt":43,"name":"Võ Hoàng Thông","cls":"T26OT1"},{"stt":44,"name":"Trần Trọng Tín","cls":"T26OT1"},{"stt":45,"name":"Trần Quốc Toản","cls":"T26OT1"},{"stt":46,"name":"Nguyễn Văn Tốt","cls":"T26OT1"},{"stt":47,"name":"Đỗ Phạm Phúc Trường","cls":"T26OT1"},{"stt":48,"name":"Đoàn Minh Tuệ","cls":"T26OT1"},{"stt":49,"name":"Trương Thanh Tùng","cls":"T26OT1"},{"stt":50,"name":"Trần Quốc Vương","cls":"T26OT1"}];
+const CLASS_T25_KEY='vs_students_t25_v1';
+const CLASS_T26DH1_KEY='vs_students_t26dh1_v1';
+const CLASS_T26OT1_KEY='vs_students_t26ot1_v1';
+let students = JSON.parse(localStorage.getItem(KEY_STUDENTS)||'[]');
+if (!Array.isArray(students) || students.length===0) {
+  students = JSON.parse(localStorage.getItem(CLASS_T25_KEY)||'null') || DEFAULT_T25_STUDENTS;
+  localStorage.setItem(KEY_STUDENTS,JSON.stringify(students));
+}
+localStorage.setItem(CLASS_T25_KEY, JSON.stringify(students.filter(s=>s.cls==='T25DL2+T25DT!')));
+const T26DH1_STUDENTS = JSON.parse(localStorage.getItem(CLASS_T26DH1_KEY)||JSON.stringify(DEFAULT_T26DH1_STUDENTS));
+const T26OT1_STUDENTS = JSON.parse(localStorage.getItem(CLASS_T26OT1_KEY)||JSON.stringify(DEFAULT_T26OT1_STUDENTS));
+localStorage.setItem(CLASS_T26DH1_KEY,JSON.stringify(T26DH1_STUDENTS));
+localStorage.setItem(CLASS_T26OT1_KEY,JSON.stringify(T26OT1_STUDENTS));
+let questions = JSON.parse(localStorage.getItem(KEY_QUESTIONS)||JSON.stringify(DEFAULT_QUESTIONS));
+let settings = Object.assign({
+  numQuestions:60, examMinutes:60, maxScore:9, shuffleQuestions:true,
+  shuffleOptions:true, tabLimit:3
+}, JSON.parse(localStorage.getItem(KEY_SETTINGS)||'{}'));
+
+let examSet=[], timerId=null, secondsLeft=0, tabChanges=0, examSubmitted=false;
+let results = JSON.parse(localStorage.getItem('vs_results_v1')||'[]');
+
+function show(id){
+  ['home','teacher','student','exam','result'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='teacher'){teacherTab('students'); renderStudents(); renderQuestions();}
+  if(id==='student'){renderStudentSelect();}
+}
+function teacherTab(id){
+  ['students','questions','settings','results'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='settings'){
+    document.getElementById('numQuestions').value=settings.numQuestions;
+    document.getElementById('maxScore').value=settings.maxScore;
+    document.getElementById('examMinutes').value=settings.examMinutes;
+    document.getElementById('shuffleQuestions').value=settings.shuffleQuestions?'yes':'no';
+    document.getElementById('shuffleOptions').value=settings.shuffleOptions?'yes':'no';
+    document.getElementById('tabLimit').value=settings.tabLimit;
+  }
+  if(id==='results') renderResults();
+}
+function splitLine(line){
+  if(line.includes('\t')) return line.split('\t');
+  if(line.includes('|')) return line.split('|');
+  return line.split(',');
+}
+function importStudents(){
+  const text=document.getElementById('studentInput').value.trim();
+  if(!text){alert('Hãy dán danh sách học sinh trước.');return;}
+  const rows=text.split(/\r?\n/).map(x=>splitLine(x).map(v=>v.trim())).filter(r=>r.length>=2);
+  const out=[];
+  rows.forEach((r,i)=>{
+    if(/^(stt|no|số thứ tự)$/i.test(r[0])) return;
+    const name=r[1]||r[0];
+    const cls=r[2]||'';
+    if(name) out.push({stt:i+1,name,cls});
+  });
+  students=out;
+  localStorage.setItem(KEY_STUDENTS,JSON.stringify(students));
+  renderStudents();
+  alert('Đã nhập '+students.length+' học sinh.');
+}
+function renderStudents(){
+  const el=document.getElementById('studentTable');
+  const all=getAllStudents();
+  const groups=[['T25DL2+T25DT!',all.T25],['T26DH1',all.T26],['T26OT1',all.T26OT1]];
+  const total=groups.reduce((n,g)=>n+g[1].length,0);
+  if(!total){el.innerHTML='<p>Chưa có học sinh.</p>';return;}
+  el.innerHTML='<p><b>Tổng số: '+total+' học sinh / 3 lớp</b></p>'+groups.map(([cls,list])=>
+    '<h3 style="margin:14px 0 6px">'+escapeHtml(cls)+' — '+list.length+' học sinh</h3>'+    '<table><tr><th>STT</th><th>Họ và tên</th><th>Lớp</th></tr>'+    list.map(s=>`<tr><td>${s.stt}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.cls)}</td></tr>`).join('')+'</table>'
+  ).join('');
+}
+function clearStudents(){
+  if(confirm('Xóa toàn bộ danh sách học sinh?')){
+    students=[];localStorage.removeItem(KEY_STUDENTS);renderStudents();
+  }
+}
+function importQuestions(){
+  const text=document.getElementById('questionInput').value.trim();
+  if(!text){alert('Hãy dán ngân hàng câu hỏi trước.');return;}
+  const rows=text.split(/\r?\n/).map(x=>splitLine(x).map(v=>v.trim())).filter(r=>r.length>=7);
+  const out=[];
+  rows.forEach(r=>{
+    if(/^(mã câu|ma cau|code)$/i.test(r[0])) return;
+    const ans=(r[6]||'').toUpperCase();
+    if(r[1] && ['A','B','C','D'].includes(ans)){
+      out.push({id:r[0]||('Q'+(out.length+1)),question:r[1],A:r[2],B:r[3],C:r[4],D:r[5],answer:ans});
+    }
+  });
+  questions=out;
+  localStorage.setItem(KEY_QUESTIONS,JSON.stringify(questions));
+  renderQuestions();
+  alert('Đã nhập '+questions.length+' câu hỏi.');
+}
+function renderQuestions(){
+  const el=document.getElementById('questionTable');
+  if(!questions.length){el.innerHTML='<p>Chưa có câu hỏi.</p>';return;}
+  el.innerHTML='<p><b>Tổng số câu: '+questions.length+'</b></p><table><tr><th>Mã</th><th>Câu hỏi</th><th>Đáp án</th></tr>'+
+    questions.slice(0,20).map(q=>`<tr><td>${escapeHtml(q.id)}</td><td>${escapeHtml(q.question)}</td><td>${q.answer}</td></tr>`).join('')+
+    '</table>'+(questions.length>20?'<p class="small">Đang hiển thị 20 câu đầu.</p>':'');
+}
+function clearQuestions(){
+  if(confirm('Xóa toàn bộ ngân hàng câu hỏi?')){
+    questions=[];localStorage.removeItem(KEY_QUESTIONS);renderQuestions();
+  }
+}
+function saveSettings(){
+  settings={
+    numQuestions:Math.max(1,parseInt(document.getElementById('numQuestions').value)||60),
+    examMinutes:Math.max(1,parseInt(document.getElementById('examMinutes').value)||60),
+    maxScore:Math.max(0.1,parseFloat(document.getElementById('maxScore').value)||9),
+    shuffleQuestions:document.getElementById('shuffleQuestions').value==='yes',
+    shuffleOptions:document.getElementById('shuffleOptions').value==='yes',
+    tabLimit:parseInt(document.getElementById('tabLimit').value)||0
+  };
+  localStorage.setItem(KEY_SETTINGS,JSON.stringify(settings));
+  alert('Đã lưu cài đặt.');
+}
+function getAllStudents(){
+  const t25 = students.filter(s => s.cls === 'T25DL2+T25DT!');
+  return {T25:t25, T26:T26DH1_STUDENTS, T26OT1:T26OT1_STUDENTS};
+}
+function renderStudentSelect(){
+  const classSel=document.getElementById('classSelect');
+  const sel=document.getElementById('studentSelect');
+  const all=getAllStudents();
+  const list=all[classSel.value]||[];
+  sel.innerHTML=list.length
+    ? '<option value="">-- Chọn học sinh --</option>'+list.map((s,i)=>`<option value="${i}">${escapeHtml(s.name)}</option>`).join('')
+    : '<option value="">Chưa có danh sách học sinh</option>';
+  sel.onchange=()=>{
+    const s=list[parseInt(sel.value)];
+    document.getElementById('studentClass').value=s?s.cls:'';
+  };
+  classSel.onchange=renderStudentSelect;
+  document.getElementById('studentClass').value=list.length?'':'';
+}
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function startExam(){
+  const idx=parseInt(document.getElementById('studentSelect').value);
+  if(isNaN(idx)){alert('Vui lòng chọn học sinh.');return;}
+  if(!questions.length){alert('Chưa có ngân hàng câu hỏi. Giáo viên hãy nhập câu hỏi trước.');return;}
+  const currentList=(document.getElementById('classSelect').value==='T26') ? T26DH1_STUDENTS : (document.getElementById('classSelect').value==='T26OT1' ? T26OT1_STUDENTS : students.filter(s=>s.cls==='T25DL2+T25DT!'));
+  const student=currentList[idx];
+  if(settings.numQuestions>questions.length){
+    alert('Số câu mỗi đề ('+settings.numQuestions+') lớn hơn ngân hàng ('+questions.length+'). Hãy giảm số câu hoặc nhập thêm câu.');
+    return;
+  }
+  let pool=settings.shuffleQuestions?shuffle(questions):[...questions];
+  examSet=pool.slice(0,settings.numQuestions).map(q=>({
+    ...q, options:settings.shuffleOptions?shuffle(['A','B','C','D']):['A','B','C','D']
+  }));
+  document.getElementById('examTitle').textContent='Bài thi — '+student.name+' — '+student.cls;
+  document.getElementById('student').classList.add('hidden');
+  document.getElementById('exam').classList.remove('hidden');
+  renderExam();
+  beginTimer();
+  tabChanges=0;examSubmitted=false;
+  document.documentElement.requestFullscreen?.().catch(()=>{});
+}
+function renderExam(){
+  const box=document.getElementById('examQuestions');
+  box.innerHTML=examSet.map((q,i)=>`
+    <div class="q">
+      <b>Câu ${i+1}. ${escapeHtml(q.question)}</b>
+      ${q.options.map(letter=>`
+        <label class="opt">
+          <input type="radio" name="q${i}" value="${letter}"> ${letter}. ${escapeHtml(q[letter])}
+        </label>`).join('')}
+    </div>`).join('');
+}
+function beginTimer(){
+  clearInterval(timerId);
+  secondsLeft=settings.examMinutes*60;
+  updateTimer();
+  timerId=setInterval(()=>{
+    secondsLeft--;updateTimer();
+    if(secondsLeft<=0){clearInterval(timerId);alert('Hết giờ. Bài thi sẽ được nộp tự động.');submitExam(true);}
+  },1000);
+}
+function updateTimer(){
+  const m=Math.floor(secondsLeft/60),s=secondsLeft%60;
+  document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function submitExam(auto){
+  if(examSubmitted)return;
+  examSubmitted=true;clearInterval(timerId);
+  let correct=0,answered=0;
+  examSet.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    if(chosen){answered++;if(chosen.value===q.answer)correct++;}
+  });
+  const idx=parseInt(document.getElementById('studentSelect').value);
+  const currentList=(document.getElementById('classSelect').value==='T26') ? T26DH1_STUDENTS : (document.getElementById('classSelect').value==='T26OT1' ? T26OT1_STUDENTS : students.filter(s=>s.cls==='T25DL2+T25DT!'));
+  const student=currentList[idx]||{name:'',cls:''};
+  const score=correct/examSet.length*settings.maxScore;
+  document.getElementById('resultStudent').textContent='Sinh viên: '+student.name+' — Lớp: '+student.cls;
+  document.getElementById('resultScore').textContent=score.toFixed(2)+' / '+settings.maxScore;
+  document.getElementById('resultDetail').textContent='Đúng '+correct+'/'+examSet.length+' câu • Đã trả lời '+answered+'/'+examSet.length+' câu'+(auto?' • Hệ thống tự động nộp khi hết giờ.':'');
+  results.push({
+    time:new Date().toLocaleString('vi-VN'),
+    name:student.name, cls:student.cls,
+    correct, total:examSet.length,
+    score:Number(score.toFixed(2)),
+    maxScore:settings.maxScore,
+    auto:!!auto
+  });
+  localStorage.setItem('vs_results_v1',JSON.stringify(results));
+  document.getElementById('exam').classList.add('hidden');
+  document.getElementById('result').classList.remove('hidden');
+  document.exitFullscreen?.().catch(()=>{});
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden && !document.getElementById('exam').classList.contains('hidden')){
+    tabChanges++;
+    if(settings.tabLimit>0 && tabChanges>=settings.tabLimit && !examSubmitted){
+      alert('Bạn đã rời khỏi màn hình thi quá số lần cho phép. Bài thi sẽ được nộp.');
+      submitExam(true);
+    }
+  }
+});
+
+function renderResults(){
+  const el=document.getElementById('resultTable');
+  if(!results.length){
+    el.innerHTML='<p>Chưa có kết quả.</p>';
+    return;
+  }
+  el.innerHTML='<table><tr><th>STT</th><th>Thời gian</th><th>Họ và tên</th><th>Lớp</th><th>Đúng</th><th>Điểm</th><th>Ghi chú</th></tr>'+
+    results.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.time)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.cls)}</td><td>${r.correct}/${r.total}</td><td><b>${r.score}/${r.maxScore}</b></td><td>${r.auto?'Tự động nộp':'Nộp bài'}</td></tr>`).join('')+
+    '</table>';
+}
+function clearResults(){
+  if(confirm('Xóa toàn bộ danh sách điểm?')){
+    results=[];
+    localStorage.removeItem('vs_results_v1');
+    renderResults();
+  }
+}
+function exportResults(){
+  if(!results.length){alert('Chưa có dữ liệu điểm để xuất.');return;}
+  const rows=[['STT','Thời gian','Họ và tên','Lớp','Số câu đúng','Tổng số câu','Điểm','Điểm tối đa','Ghi chú']];
+  results.forEach((r,i)=>rows.push([i+1,r.time,r.name,r.cls,r.correct,r.total,r.score,r.maxScore,r.auto?'Tự động nộp':'Nộp bài']));
+  const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Danh_sach_diem_tieng_Anh.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function escapeHtml(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+show('home');
+</script>
+</body>
+</html>
